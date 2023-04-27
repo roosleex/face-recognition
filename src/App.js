@@ -12,7 +12,8 @@ class App extends Component {
     super();
     this.state = {
       input: '',
-      imageUrl: ''
+      imageUrl: '',
+      box: {}
     }
   }
 
@@ -24,15 +25,17 @@ class App extends Component {
   onButtonSubmit = () => {
     console.log('onButtonSubmit', 'imageUrl=' + this.state.input);
     this.setState({imageUrl: this.state.input});
+    const requestOptions = this.getRequestOptions(this.state.input);  
     
-    const requestOptions = this.getRequestOptions(this.state.imageUrl);
-
     // NOTE: MODEL_VERSION_ID is optional, you can also call prediction with the MODEL_ID only
     // https://api.clarifai.com/v2/models/{YOUR_MODEL_ID}/outputs
     // this will default to the latest version_id
     fetch(`https://api.clarifai.com/v2/models/face-detection/versions/6dc7e46bc9124c5c8824be4822abe105/outputs`, requestOptions)
         .then(response => response.text())
-        .then(result => console.log(result))
+        .then(result => {
+          console.log(result);
+          this.displayFaceBox(this.calculateFaceLocation(result));
+        })
         .catch(error => console.log('error', error));
   }
 
@@ -44,12 +47,12 @@ class App extends Component {
         <Logo />
         <Rank />
         <ImageLinkForm onInputChange={this.onInputChange} onButtonSubmit={this.onButtonSubmit} />
-        <FaceRecognition imageUrl = {this.state.imageUrl} />
+        <FaceRecognition box={this.state.box} imageUrl = {this.state.imageUrl} />
       </div>
     );
   }
 
-  getRequestOptions(imageUrl) {
+  getRequestOptions = (imageUrl) => {
     const USER_ID = 'ruslan-7';
     // Your PAT (Personal Access Token) can be found in the portal under Authentification
     const PAT = '7185e35ba7f141bc8b1d219212f188af';
@@ -83,7 +86,27 @@ class App extends Component {
     };
 
     console.log('requestOptions', requestOptions);
+    console.log('requestOptions imageUrl', IMAGE_URL);
     return requestOptions
+  }
+
+  calculateFaceLocation = (data) => {
+    const obj = JSON.parse(data);
+    let faceBox = obj.outputs[0].data.regions[0].region_info.bounding_box;
+    //console.log('faceBox', faceBox);
+    const image = document.getElementById('input-image');
+    const width = Number(image.width);
+    const height = Number(image.height);
+    return {
+      leftCol: faceBox.left_col * width,
+      topRow: faceBox.top_row * height,
+      rightCol: width - (faceBox.right_col * width),
+      bottomRow: height - (faceBox.bottom_row * height),
+    }
+  }
+
+  displayFaceBox = (box) => {
+    this.setState({box: box});
   }
 }
 
