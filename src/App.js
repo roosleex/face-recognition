@@ -91,18 +91,29 @@ class App extends Component {
   }
 
   calculateFaceLocation = (data) => {
+    let result = {
+      leftCol: '',
+      topRow: '',
+      rightCol: '',
+      bottomRow: '',
+    };
     const obj = JSON.parse(data);
+    if (!obj.outputs[0].data.hasOwnProperty('regions')) {
+      console.log('faceBox', 'is empty');
+      return result;
+    }
+
     let faceBox = obj.outputs[0].data.regions[0].region_info.bounding_box;
-    //console.log('faceBox', faceBox);
+    console.log('faceBox', faceBox);
     const image = document.getElementById('input-image');
     const width = Number(image.width);
     const height = Number(image.height);
-    return {
-      leftCol: faceBox.left_col * width,
-      topRow: faceBox.top_row * height,
-      rightCol: width - (faceBox.right_col * width),
-      bottomRow: height - (faceBox.bottom_row * height),
-    }
+  
+    result.leftCol = faceBox.left_col * width;
+    result.topRow = faceBox.top_row * height;
+    result.rightCol = width - (faceBox.right_col * width);
+    result.bottomRow = height - (faceBox.bottom_row * height);
+    return result;
   }
 
   displayFaceBox = (box) => {

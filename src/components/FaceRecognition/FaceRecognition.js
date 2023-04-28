@@ -4,6 +4,7 @@ import './FaceRecognition.css';
 const FaceRecognition = ({imageUrl, box}) => {
     console.log('FaceRecognition', 'imageUrl=' + imageUrl);
     console.log('FaceRecognition', 'box=' + box);
+    
     return (
     <div className='center ma'>
         <div className='absolute mt2'>
